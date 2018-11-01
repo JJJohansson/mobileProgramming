@@ -31,14 +31,14 @@ export default class App extends React.Component {
           <Button style={{marginTop: 50}} title="ADD" onPress={this.add}/>
         </View>
         <KeyboardAvoidingView behavior="padding" style={styles.container}>
-          <Text style={styles.text}>Shopping List:</Text>
+          <Text style={styles.text}>Shopping list:</Text>
           <FlatList data={this.state.list}
             keyExtractor={item => item.id}
             renderItem={({item}) =>
             <View style={styles.listContainer}>
               <Text style={styles.text}> {item.products}, {item.amounts}{'\n'}</Text>
               <Text style={{color: '#ff0000'}}
-                onPress={() => this.deleteItem(item.id)}> Delete{'\n'}</Text>
+                onPress={() => this.deleteItem(item.id)}> Bought{'\n'}</Text>
             </View>
           }
           ItemSeparatorComponent={this.listSeparator}
@@ -53,9 +53,10 @@ listSeparator = () => {
     <View
       style={{
         height: 2,
-        width: "100%",
+        width: "80%",
         backgroundColor: "#fff",
-        marginLeft: "10%"
+        marginLeft: "10%",
+        marginRight: "10%"
       }}
       />
   );
@@ -107,6 +108,7 @@ const styles = StyleSheet.create({
   listContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    width: 150
   }
 });
