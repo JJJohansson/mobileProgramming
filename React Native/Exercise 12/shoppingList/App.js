@@ -1,94 +1,114 @@
 import React from 'react';
-import {StyleSheet, Text, TextInput, View, Button, FlatList, Alert} from 'react-native';
-import Expo, { SQLite } from 'expo';
+import {StyleSheet, Button, TextInput, FlatList, View, Text, KeyboardAvoidingView, StatusBar} from 'react-native';
+import {SQLite} from 'expo';
 
-const db = SQLite.openDatabase('coursedb.db');
+const db = SQLite.openDatabase('shoppinglist.db');
 
 export default class App extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {credit: '', title: '', courses: []};
-  }
+    constructor(props) {
+        super(props);
+        this.state = {product: '', amount: '', list: []}
+    }
 
-  componentDidMount() {
-    // Create course table
-    db.transaction(tx => {
-      tx.executeSql('create table if not exists course (id integer primary key not null, credits int, title text);');
-    });
-    this.updateList();
-  }
+    componentDidMount() {
+        db.transaction(tx => {
+            tx.executeSql('create table if not exists shoppingListTable (id integer primary key not null, products text, amounts text);');
+        });
+        this.updateList();
+    }
 
-  // Save course
-  saveItem = () => {
-    db.transaction(tx => {
-        tx.executeSql('insert into course (credits, title) values (?, ?)', [parseInt(this.state.credit), this.state.title]);
-      }, null, this.updateList)
-  }
+    render() {
+        return (
+            <View style={styles.container}>
+                <StatusBar hidden={true}/>
+                <View style={styles.container}>
+                    <Text style={styles.text}>Enter Shopping List Items:</Text>
+                    <TextInput placeholder='Product' value={this.state.product} style={styles.textInput}
+                               onChangeText={(product) => this.setState({product})}/>
+                    <TextInput placeholder='Amount' keyboardType='phone-pad' value={this.state.amount}
+                               style={styles.textInput}
+                               onChangeText={(amount) => this.setState({amount})}/>
+                             <Button style={{margin: 5}} title="ADD" onPress={this.add}/>
+                </View>
+                <KeyboardAvoidingView behavior="padding" style={styles.container}>
+                    <Text style={styles.text}>Shopping List:</Text>
+                    <FlatList data={this.state.list}
+                              keyExtractor={item => item.id}
+                              renderItem={({item}) =>
+                                  <View style={styles.listContainer}>
+                                      <Text style={styles.text}> {item.products}, {item.amounts}{'\n'}</Text>
+                                      <Text style={{color: '#ff0000'}}
+                                            onPress={() => this.deleteItem(item.id)}> Delete{'\n'}</Text>
+                                  </View>
+                              }
+                    ItemSeparatorComponent={this.listSeparator}
+                    />
+                </KeyboardAvoidingView>
+            </View>
+        );
+    }
 
-  // Update courselist
-  updateList = () => {
-    db.transaction(tx => {
-      tx.executeSql('select * from course', [], (_, { rows }) =>
-        this.setState({courses: rows._array})
-      );
-    });
-  }
+    listSeparator = () => {
+        return (
+            <View
+                style={{
+                    height: 2,
+                    width: "100%",
+                    backgroundColor: "#fff",
+                    marginLeft: "10%"
+                }}
+            />
+        );
+    };
 
-  // Delete course
-  deleteItem = (id) => {
-    db.transaction(
-      tx => {
-        tx.executeSql(`delete from course where id = ?;`, [id]);
-      }, null, this.updateList
-    )
-  }
+    add = () => {
+        db.transaction(tx => {
+            tx.executeSql('INSERT INTO shoppingListTable (products, amounts) VALUES (?, ?)',
+                [this.state.product, this.state.amount]);
+        }, null, this.updateList)
+    };
 
-  listSeparator = () => {
-    return (
-      <View
-        style={{
-          height: 5,
-          width: "80%",
-          backgroundColor: "#fff",
-          marginLeft: "10%"
-        }}
-      />
-    );
-  };
+    updateList = () => {
+        db.transaction(tx => {
+            tx.executeSql('SELECT * FROM shoppingListTable', [], (_, {rows}) =>
+                this.setState({list: rows._array})
+            );
+        });
+    };
 
-  render() {
-    return (
-      <View style={styles.container}>
-        <TextInput placeholder='Title' style={{marginTop: 30, fontSize: 18, width: 200, borderColor: 'gray', borderWidth: 1}}
-          onChangeText={(title) => this.setState({title})}
-          value={this.state.title}/>
-        <TextInput placeholder='Credits' keyboardType="numeric" style={{ marginTop: 5, marginBottom: 5,  fontSize:18, width: 200, borderColor: 'gray', borderWidth: 1}}
-          onChangeText={(credit) => this.setState({credit})}
-          value={this.state.credit}/>
-        <Button onPress={this.saveItem} title="Save" />
-        <Text style={{marginTop: 30, fontSize: 20}}>Courses</Text>
-        <FlatList
-          style={{marginLeft : "5%"}}
-          keyExtractor={item => item.id}
-          renderItem={({item}) => <View style={styles.listcontainer}><Text style={{fontSize: 18}}>{item.title}, {item.credits}   </Text>
-          <Text style={{fontSize: 18, color: '#0000ff'}} onPress={() => this.deleteItem(item.id)}>done</Text></View>} data={this.state.courses} ItemSeparatorComponent={this.listSeparator}
-        />
-      </View>
-    );
-  }
-
+    deleteItem = (id) => {
+        db.transaction(
+            tx => {
+                tx.executeSql(`DELETE FROM shoppingListTable WHERE id = ?;`, [id]);
+            }, null, this.updateList
+        )
+    };
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  listcontainer: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
-    alignItems: 'center'
-  }
+    container: {
+        flex: 1,
+        backgroundColor: '#708090',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    textInput: {
+        width: 200,
+        height: 40,
+        backgroundColor: '#ffffff',
+        borderColor: '#000000',
+        borderWidth: 1
+    },
+    text: {
+        color: 'white',
+        fontSize: 19
+    },
+    buttons: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end'
+    },
+    listContainer: {
+        flexDirection: 'row',
+        alignItems: 'center'
+    }
 });
