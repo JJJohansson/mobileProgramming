@@ -1,0 +1,71 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Counter</title>
+  <style>
+     body {
+      background-color: #FFFFFF;
+     }
+    #circle {
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #000000;
+      font-size: 50px;
+      color: #fff;
+      line-height: 500px;
+      text-align: center;
+      background-color: #f4df42
+    }
+
+    #circle span {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+</style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+  <script type="text/babel">
+
+    function $(id) {
+      return document.getElementById(id);
+    }
+
+    class Button extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          clicks: 0
+        }
+      }
+
+      click = () => {
+        this.setState((prevState) => {
+          return {clicks: prevState.clicks +1}
+        });
+      }
+
+      render() {
+        return (
+          <div>
+            <h2>How many times can you press the button?<br />Start by pressing the button.</h2>
+            <h3 id="countdown"></h3>
+            <div id="circle" onClick={this.click}><span>PRESS ME!</span></div>
+            <h1 id="score">{this.state.clicks}</h1>
+          </div>
+        );
+      }
+    }
+    ReactDOM.render(<Button />, $('app'));
+  </script>
+</body>
+</html>

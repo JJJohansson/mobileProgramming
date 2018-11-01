@@ -1,0 +1,56 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Weather</title>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+  <script type="text/babel">
+
+    const key = '3532c1fd03f28b9637c274b62de591ac';
+    class NasaFetch extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          temperature: '',
+          weather: '',
+          icon: ''
+        };
+      }
+
+      componentDidMount() {
+        fetch(`https://api.openweathermap.org/data/2.5/weather?q=Helsinki&APPID=${key}&units=metric`)
+        .then((response) => response.json())
+        .then((responseData) => {
+          console.log(responseData);
+          this.setState({
+            temp: responseData.main.temp,
+            weather: responseData.weather[0].main,
+            icon: `http://openweathermap.org/img/w/${responseData.weather[0].icon}.png`
+          });
+        })
+        .catch((err) => {
+          console.log("EI VITTU!\n"+err);
+        });
+      }
+
+      render() {
+        return (
+          <div>
+            <p>Temperature: {this.state.temp}</p>
+            <p>Weather: {this.state.weather}</p>
+            <img src={this.state.icon}/>
+          </div>
+        );
+      }
+    }
+    ReactDOM.render(<NasaFetch />, document.getElementById("app"));
+  </script>
+</body>
+</html>

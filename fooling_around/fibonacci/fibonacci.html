@@ -1,0 +1,66 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Fibonaccy Sequence</title>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+  <script type="text/babel">
+
+    class FibonacciSequence extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          sequence: []
+        };
+      }
+
+      fibonacci = () => {
+        console.log(this.state.sequence.length);
+        if (this.state.sequence.length < 16) {
+          for (let i = 2; i <= 15; i++) {
+            this.setState((prevState) => {
+              let temp = prevState.sequence;
+              let entry = temp[i-2] + temp[i-1];
+              temp.push(entry);
+              return {sequence: temp}
+            });
+          }
+        }
+      }
+
+      reset = () => {
+        this.setState({sequence: [0,1]});
+      }
+
+      componentDidMount() {
+        console.log('componentDidMount()');
+        const start = [0,1];
+        this.setState({sequence: start});
+      }
+
+      render() {
+        const rows = this.state.sequence.map((number, index) =>
+          <li key={index}>fn<sup>{index}</sup> = {number}</li>
+        );
+          console.log('render()');
+        return (
+          <div>
+            <button onClick={this.fibonacci}>Calculate</button>
+            <button onClick={this.reset}>Reset</button>
+            <ul>{rows}</ul>
+          </div>
+        );
+      }
+    }
+
+    ReactDOM.render(<FibonacciSequence/>, document.getElementById("app"));
+  </script>
+</body>
+</html>
