@@ -1,5 +1,6 @@
 import React from 'react';
 import {StyleSheet, Button, TextInput, FlatList, View, Text, KeyboardAvoidingView, StatusBar} from 'react-native';
+import { Button } from 'react-native-elements'
 import {SQLite} from 'expo';
 
 const db = SQLite.openDatabase('shoppinglist.db');
