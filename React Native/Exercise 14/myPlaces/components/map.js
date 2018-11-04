@@ -4,17 +4,18 @@ import { MapView, Location, Permissions } from 'expo';
 const key = 'AIzaSyB5LPlTnHClwSE8rXgznk6nuGxxBnAfu1M';
 
 export default class Map extends React.Component {
+  static navigationOptions = {title: 'Map',};
+
   constructor(props) {
     super(props);
     this.state = {
-      location: null,
+      place: '',
       address: '',
       latitude: 60.200692,
       longitude: 24.934302,
-      latitudeDelta: 0.1,
-      longitudeDelta: 0.1,
-      markerTitle: '',
-      markers: []
+      latitudeDelta: 0.004757,
+      longitudeDelta: 0.006866,
+      params: ''
     }
   }
 
@@ -23,70 +24,26 @@ export default class Map extends React.Component {
   }
 
   getLocation = async () => {
-    let { status } = await Permissions.askAsync(Permissions.LOCATION);
-    if (status !== 'granted') {
-      Alert.alert('No permission to access location.');
-    }
-    else {
-      let location = await Location.getCurrentPositionAsync({ enableHighAccuracy: true });
-      this.setState({ location, latitude: location.coords.latitude, longitude: location.coords.longitude })
-    }
-  }
-
-  getAddress = () => {
-    if (this.state.address.length < 1) { Alert.alert("Please type an address!"); return false }
-
-    fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${this.state.address}&key=${key}&language=fi`)
-    .then((response) => response.json())
-    .then((responseJson) => {
-      this.setState({latitude: responseJson.results[0].geometry.location.lat,
-        longitude: responseJson.results[0].geometry.location.lng,
-        latitudeDelta: 0.004757,
-        longitudeDelta: 0.006866,
-        markerTitle: responseJson.results[0].formatted_address});
-    })
-    .then(this.getRestaurants)
-    .catch((error) => {
-      Alert.alert(error);
+    const { params } = this.props.navigation.state;
+    this.setState({
+      place: params.place.place,
+      address: params.place.address,
+      latitude: params.place.latitude,
+      longitude: params.place.longitude,
+      latitudeDelta: 0.015,
+      longitudeDelta: 0.015,
     });
   }
 
-  getRestaurants = () => {
-    fetch(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${this.state.latitude},${this.state.longitude}&radius=300&type=restaurant&key=${key}`)
-    .then((response) => response.json())
-    .then((responseJson) => {
-      let temp = [];
-      for (let i = 0; i < responseJson.results.length; i++) {
-        temp.push({
-          name: responseJson.results[i].name,
-          address: responseJson.results[i].vicinity,
-          latitude: responseJson.results[i].geometry.location.lat,
-          longitude: responseJson.results[i].geometry.location.lng
-        })
-        this.setState({markers: temp})
-      }
-    })
-  }
-
   render() {
-    const { params } = this.props.navigation.state;
-    var history = params.history;
-    const renderMarkers = this.state.markers.map((marker, index) =>
-      <MapView.Marker
-        key = {index}
-        title = {marker.name}
-        description = {marker.address}
-        coordinate = {{
-          latitude: marker.latitude,
-          longitude: marker.longitude
-        }} />
-    )
-
     return (
       <KeyboardAvoidingView style={styles.container} behavior="padding">
-        <Text>{JSON.stringify(params.address)}</Text>
+        <Text>{this.state.params.address}</Text>
+        <Text>{this.state.params.latitude}</Text>
+        <Text>{this.state.params.longitude}</Text>
         <MapView
           style={styles.map}
+          onRegionChangeComplete={() => this.marker.showCallout()}
           region={{
             latitude: this.state.latitude,
             longitude: this.state.longitude,
@@ -98,14 +55,10 @@ export default class Map extends React.Component {
               latitude: this.state.latitude,
               longitude: this.state.longitude
             }}
-            title= {this.state.markerTitle} />
-          {renderMarkers}
+            title = {this.state.place}
+            description = {this.state.address}
+            ref = {marker => (this.marker = marker)} />
         </MapView>
-        <View style={styles.search}>
-          <TextInput style={{fontSize: 18, height: 50}} value={this.state.address}
-            onChangeText={(address) => this.setState({address})} />
-          <Button title='SHOW' onPress={this.getAddress}></Button>
-        </View>
       </KeyboardAvoidingView>
     );
   }
@@ -116,7 +69,7 @@ const styles = StyleSheet.create({
     flex: 1
   },
   map: {
-    flex: 0.8
+    flex: 1
   },
   search: {
     flex: 0.2,
